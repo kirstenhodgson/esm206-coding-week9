@@ -1,0 +1,83 @@
+---
+title: "Part 1 Multiple linear regression"
+author: "Kirsten Hodgson"
+date: "12/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(palmerpenguins)
+library(GGally)
+library(stargazer)
+```
+
+```{r}
+penguins %>% 
+  ggpairs()
+```
+
+```{r}
+penguins %>% 
+  select(species, bill_length_mm:body_mass_g) %>% 
+  ggpairs(aes(color = species))
+```
+
+## Build a few different models
+
+ 
+```{r}
+lm1 <- lm(body_mass_g ~ flipper_length_mm + species, data = penguins)
+lm1
+
+lm2 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
+lm2
+
+lm3 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm, data = penguins)
+lm3
+
+lm4 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm + island, data = penguins)
+lm4
+```
+
+## Akaike Information Criterion (AIC)
+
+Penalizes the addition of more variables and lets you know if the balance of increased complexity for better model fit was worth it. Lower value is better.
+
+- Value means nothing on its own, only useful to compare different permutations of a model
+- Note that the R function is capitalized
+
+```{r}
+AIC(lm1)
+
+AIC(lm2)
+
+AIC(lm3) #Lowest, so based on AIC value this is the best balance of model fit and model complexity
+
+AIC(lm4)
+```
+
+AIC is only part of thinking about model values, we need to think about other components of model creation. Statistics are never a substitute for judgment!
+
+## Use stargazer package for table with multiple model outputs
+
+```{r, results = 'asis'}
+stargazer(lm1, lm3, lm4, type = "html")
+```
+
+## Omitted variable bias
+
+```{r}
+ggplot(data = penguins, aes(x = flipper_length_mm, y = bill_depth_mm)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(data = penguins, aes(x = flipper_length_mm, y = bill_depth_mm, group = species)) +
+  geom_point(aes(color = species)) +
+  geom_smooth(method = "lm", aes(color = species))
+```
+
